@@ -83,19 +83,67 @@ jobs:
             - `package.json` - Package configuration
 
             ### Installation
+
+            **From npm:**
             ```bash
             npm install drizzle-orm-helpers@${{ steps.version.outputs.version }}
+            ```
+
+            **From GitHub (with built files):**
+            ```bash
+            # Latest version
+            npm install github:${{ github.repository }}#release
+
+            # This specific version
+            npm install github:${{ github.repository }}#${{ steps.version.outputs.tag }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit version bump (if manual trigger)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Configure Git for release branch
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add package.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+
+      - name: Prepare release branch with dist
+        run: |
+          # Save dist to temporary location before switching branches
+          cp -r dist /tmp/release-dist
+
+          # Fetch and checkout release branch (create as orphan if doesn't exist)
+          git fetch origin release:release 2>/dev/null || git checkout --orphan release
+
+          # Switch to release branch
+          git checkout release 2>/dev/null || echo "Already on release branch"
+
+          # Remove all existing files from release branch
+          git rm -rf . 2>/dev/null || true
+          rm -rf * 2>/dev/null || true
+
+          # Copy necessary files from the original commit
+          git checkout ${{ github.sha }} -- package.json 2>/dev/null || true
+          git checkout ${{ github.sha }} -- README.md 2>/dev/null || true
+          git checkout ${{ github.sha }} -- LICENSE 2>/dev/null || true
+          git checkout ${{ github.sha }} -- documentation.md 2>/dev/null || true
+
+          # Copy the built dist directory from temp location
+          cp -r /tmp/release-dist ./dist
+
+          # Add all files
+          git add -A
+
+          # Commit the changes
+          git diff --cached --quiet || git commit -m "Release ${{ steps.version.outputs.tag }}"
+
+      - name: Push release branch and move tag
+        run: |
+          # Delete the existing tag locally and remotely
+          git tag -d ${{ steps.version.outputs.tag }} || true
+          git push origin :refs/tags/${{ steps.version.outputs.tag }} || true
+
+          # Create new tag on the release branch commit
           git tag ${{ steps.version.outputs.tag }}
-          git push origin HEAD:${{ github.ref_name }}
+
+          # Force push release branch and tags
+          git push origin release --force
           git push origin ${{ steps.version.outputs.tag }}
