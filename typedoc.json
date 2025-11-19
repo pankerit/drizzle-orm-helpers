@@ -1,0 +1,49 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": [
+		"./src/index.ts",
+		"./src/pg/index.ts",
+		"./src/mysql/index.ts",
+		"./src/sqlite/index.ts"
+	],
+	"out": "documentation",
+	"name": "Drizzle ORM Helpers documentation",
+	"disableSources": true,
+	"basePath": ".",
+	"cleanOutputDir": true,
+	"hideBreadcrumbs": true,
+	"publicPath": ".",
+	"useHTMLAnchors": true,
+	"readme": "none",
+	"githubPages": false,
+	"excludeGroups": false,
+	"hidePageHeader": true,
+	"entryFileName": "README",
+	"entryModule": "src",
+	"useCodeBlocks": true,
+	"outputFileStrategy": "modules",
+	"expandObjects": false,
+	"expandParameters": true,
+	"parametersFormat": "table",
+	"propertiesFormat": "table",
+	"enumMembersFormat": "table",
+	"typeDeclarationFormat": "table",
+	"indexFormat": "table",
+	"plugin": ["typedoc-plugin-markdown", "typedoc-plugin-remark"],
+	"remarkPlugins": [
+		"unified-prettier",
+		[
+			"remark-github",
+			{
+				"repository": "https://github.com/iolyd/drizzle-orm-helpers"
+			}
+		],
+		[
+			"remark-toc",
+			{
+				"heading": "Table of Contents",
+				"maxDepth": 3
+			}
+		]
+	]
+}
