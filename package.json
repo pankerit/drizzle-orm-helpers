@@ -75,6 +75,9 @@
 	},
 	"scripts": {
 		"doc": "pnpm typedoc && mv documentation/src/* documentation/ && rm -rf documentation/src",
-		"prepublishOnly": "pnpm tsup"
+		"prepublishOnly": "pnpm tsup",
+		"release:patch": "npm version patch && git push && git push --tags",
+		"release:minor": "npm version minor && git push && git push --tags",
+		"release:major": "npm version major && git push && git push --tags"
 	}
 }
