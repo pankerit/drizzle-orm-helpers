@@ -1,7 +1,7 @@
-import { SQLWrapper, Table, InferSelectModel, Column, View, Subquery, SQL, ColumnsSelection, ColumnBuilderBase, AnyColumn, WithSubquery, Placeholder } from 'drizzle-orm';
-import { MySqlSelect, MySqlSchema, SubqueryWithSelection as SubqueryWithSelection$1, WithSubqueryWithSelection as WithSubqueryWithSelection$3, AnyMySqlSelect } from 'drizzle-orm/mysql-core';
-import { PgSelect, PgSchema, SubqueryWithSelection as SubqueryWithSelection$2, WithSubqueryWithSelection as WithSubqueryWithSelection$1, AnyPgSelect } from 'drizzle-orm/pg-core';
-import { SQLiteSelect, SubqueryWithSelection as SubqueryWithSelection$3, WithSubqueryWithSelection as WithSubqueryWithSelection$2, AnySQLiteSelect } from 'drizzle-orm/sqlite-core';
+import { ColumnBuilderBase, AnyColumn, Table, View, Subquery, WithSubquery, SQLWrapper, InferSelectModel, Column, SQL, Placeholder, ColumnsSelection } from 'drizzle-orm';
+import { AnyMySqlSelect, MySqlSchema, MySqlSelect, SubqueryWithSelection as SubqueryWithSelection$1, WithSubqueryWithSelection as WithSubqueryWithSelection$3 } from 'drizzle-orm/mysql-core';
+import { AnyPgSelect, PgSchema, PgSelect, SubqueryWithSelection as SubqueryWithSelection$2, WithSubqueryWithSelection as WithSubqueryWithSelection$1 } from 'drizzle-orm/pg-core';
+import { AnySQLiteSelect, SQLiteSelect, SubqueryWithSelection as SubqueryWithSelection$3, WithSubqueryWithSelection as WithSubqueryWithSelection$2 } from 'drizzle-orm/sqlite-core';
 import { SetOptional } from 'type-fest';
 
 /**
@@ -66,4 +66,4 @@ declare function paginate<T extends Select>(qb: T, { page, size }: {
     size?: number;
 }): PgSelect | MySqlSelect | SQLiteSelect;
 
-export { type AnySelect as A, type InferData as I, type Select as S, type WithSubqueryWithSelection as W, type Schema as a, type SubqueryWithSelection as b, type InferColumnType as c, type InferColumns as d, type InferNameOrAlias as e, getNameOrAlias as f, getColumns as g, paginate as p };
+export { type AnySelect as A, type InferData as I, type Schema as S, type WithSubqueryWithSelection as W, type InferColumnType as a, type InferColumns as b, type InferNameOrAlias as c, type Select as d, type SubqueryWithSelection as e, getNameOrAlias as f, getColumns as g, paginate as p };
