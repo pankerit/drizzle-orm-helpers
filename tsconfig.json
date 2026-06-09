@@ -4,6 +4,7 @@
 		"alwaysStrict": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
+		"ignoreDeprecations": "6.0",
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
 		"noImplicitAny": true,
@@ -19,5 +20,5 @@
 		"verbatimModuleSyntax": true,
 		"checkJs": true
 	},
-	"exclude": ["dist"]
+	"exclude": ["dist", "eslint.config.cjs"]
 }

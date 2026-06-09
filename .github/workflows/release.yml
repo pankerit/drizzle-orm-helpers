@@ -3,8 +3,8 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger on version tags like v1.0.0, v0.7.7
-  workflow_dispatch:  # Allow manual trigger
+      - 'v*.*.*' # Trigger on version tags like v1.0.0, v0.7.7
+  workflow_dispatch: # Allow manual trigger
     inputs:
       version:
         description: 'Version to release (e.g., 1.0.0)'
@@ -16,11 +16,13 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write  # Required for creating releases
+      contents: write # Required for creating releases
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -61,6 +63,46 @@ jobs:
           zip -r ../dist.zip .
           cd ..
 
+      - name: Configure Git for release refs
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Prepare GitHub npm install refs
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p /tmp/release-package /tmp/release-assets
+          cp package.json README.md /tmp/release-package/
+          for file in LICENSE documentation.md; do
+            if [ -f "$file" ]; then
+              cp "$file" /tmp/release-package/
+            fi
+          done
+          cp -r dist /tmp/release-package/dist
+          cp dist.tar.gz dist.zip /tmp/release-assets/
+
+          git fetch origin '+refs/heads/release:refs/remotes/origin/release' || true
+          if git show-ref --verify --quiet refs/remotes/origin/release; then
+            git checkout -B release refs/remotes/origin/release
+          else
+            git checkout --orphan release
+          fi
+
+          git rm -rf . 2>/dev/null || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+
+          cp -r /tmp/release-package/. .
+          git add -A
+          git diff --cached --quiet || git commit -m "Release $TAG"
+          git tag -f "$TAG"
+          git push origin release --force
+          git push origin "refs/tags/$TAG" --force
+
+          cp /tmp/release-assets/dist.tar.gz /tmp/release-assets/dist.zip .
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -76,7 +118,7 @@ jobs:
             ## Release ${{ steps.version.outputs.tag }}
 
             ### Changes
-            Built and packaged dist files for version ${{ steps.version.outputs.version }}
+            Built and packaged dist files for version ${{ steps.version.outputs.version }}.
 
             ### Assets
             - `dist.tar.gz` - Compiled distribution files (tar.gz)
@@ -85,66 +127,14 @@ jobs:
 
             ### Installation
 
-            **From npm:**
+            **Always up to date**
             ```bash
-            npm install drizzle-orm-helpers@${{ steps.version.outputs.version }}
+            npm install github:${{ github.repository }}#release
             ```
 
-            **From GitHub (with built files):**
+            **Pinned to this version tag**
             ```bash
-            # Latest version
-            npm install github:${{ github.repository }}#release
-
-            # This specific version
             npm install github:${{ github.repository }}#${{ steps.version.outputs.tag }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure Git for release branch
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      - name: Prepare release branch with dist
-        run: |
-          # Save dist to temporary location before switching branches
-          cp -r dist /tmp/release-dist
-
-          # Fetch and checkout release branch (create as orphan if doesn't exist)
-          git fetch origin release:release 2>/dev/null || git checkout --orphan release
-
-          # Switch to release branch
-          git checkout release 2>/dev/null || echo "Already on release branch"
-
-          # Remove all existing files from release branch
-          git rm -rf . 2>/dev/null || true
-          rm -rf * 2>/dev/null || true
-
-          # Copy necessary files from the original commit
-          git checkout ${{ github.sha }} -- package.json 2>/dev/null || true
-          git checkout ${{ github.sha }} -- README.md 2>/dev/null || true
-          git checkout ${{ github.sha }} -- LICENSE 2>/dev/null || true
-          git checkout ${{ github.sha }} -- documentation.md 2>/dev/null || true
-
-          # Copy the built dist directory from temp location
-          cp -r /tmp/release-dist ./dist
-
-          # Add all files
-          git add -A
-
-          # Commit the changes
-          git diff --cached --quiet || git commit -m "Release ${{ steps.version.outputs.tag }}"
-
-      - name: Push release branch and move tag
-        run: |
-          # Delete the existing tag locally and remotely
-          git tag -d ${{ steps.version.outputs.tag }} || true
-          git push origin :refs/tags/${{ steps.version.outputs.tag }} || true
-
-          # Create new tag on the release branch commit
-          git tag ${{ steps.version.outputs.tag }}
-
-          # Force push release branch and tags
-          git push origin release --force
-          git push origin ${{ steps.version.outputs.tag }}

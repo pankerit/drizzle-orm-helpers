@@ -143,8 +143,7 @@ export function getColumns<
 		: is(table, View)
 			? // eslint-disable-next-line @typescript-eslint/no-explicit-any
 				(table as any)[ViewBaseConfig].selectedFields
-			: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-				table._.selectedFields;
+			: table._.selectedFields;
 }
 
 /**
