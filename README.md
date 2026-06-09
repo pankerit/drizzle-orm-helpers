@@ -20,6 +20,20 @@ officially and with more stability through Drizzle-ORM package(s).
 A crude auto-generated
 [**documentation** is available here](https://github.com/iolyd/drizzle-orm-helpers/blob/main/documentation/README.md).
 
+## Installation
+
+Install the always up-to-date build from the moving `release` branch:
+
+```bash
+npm install github:pankerit/drizzle-orm-helpers#release
+```
+
+Install a fixed build from a version tag:
+
+```bash
+npm install github:pankerit/drizzle-orm-helpers#v0.10.0
+```
+
 ## Examples
 
 ### Aggregating translations
